@@ -1,4 +1,5 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import average_precision_score
 import argparse
 import os
 import numpy as np
@@ -69,8 +70,9 @@ def main():
 
     model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
 
-    accuracy = model.score(x_test, y_test)
-    run.log("Accuracy", np.float(accuracy))
+    predictions = model.predict(x_test)
+    avg_prec_sc = average_precision_score(y_test, predictions, average='weighted')
+    run.log("average_precision_score_weighted", np.float(avg_prec_sc))
 
 if __name__ == '__main__':
     main()
