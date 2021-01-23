@@ -169,7 +169,7 @@ Some more things that we can do with our service includes enabling application i
 [Enable Insights and Delete]("/images/enable-insights-delete.png")
 
 ## Screen Recording<a name="sr"></a>
-View the Screen Recording for my submission [here](https://youtu.be/SjtqRTwpYLw).
+View the Screen Recording for my submission [here](https://youtu.be/nLUVNtQ9z44).
 
 ## Standout Suggestions<a name="ss"></a>
 
