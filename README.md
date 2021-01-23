@@ -1,7 +1,7 @@
 # Cervical Cancer Classification
 This is the Capstone Project of my Machine Learning Engineer with Microsoft Azure Nanodegree Program by Udacity.
 
-I used an external dataset i.e. [Cervical Cancer Risk Classification](https://archive.ics.uci.edu/ml/datasets/Cervical+cancer+%28Risk+Factors%29) dataset in our Machine Learning Workspace, and trained the model using different tools available in the Microsoft Azure Workspace. I created two models, one using *Automated ML* module by Microsoft Azure and one Logistic Regression model whose hyperparameters are tuned using *Hyperdrive*. I compared their performance on the basis of their respective Weighted Average Precision Score wherein the score of the Voting Ensemble model created by AutoML was found to be 0.9150 and the Logistic Regression model as 0.098. Furthermore, I deploy the better performing model i.e. clearly the Voting Ensemble model as a web service using the Azure ML Framework. 
+I used an external dataset i.e. [Cervical Cancer Risk Classification](https://archive.ics.uci.edu/ml/datasets/Cervical+cancer+%28Risk+Factors%29) dataset in our Machine Learning Workspace, and trained the model using different tools available in the Microsoft Azure Workspace. I created two models, one using *Automated ML* module by Microsoft Azure and one Logistic Regression model whose hyperparameters are tuned using *Hyperdrive*. I compared their performance on the basis of their respective Weighted Average Precision Score wherein the score of the Voting Ensemble model created by AutoML was found to be 0.9150 and the Logistic Regression model as 0.104. Furthermore, I deploy the better performing model i.e. clearly the Voting Ensemble model as a web service using the Azure ML Framework. 
 
 <img src="/images/capstone-diagram.png"/>
 
@@ -36,6 +36,8 @@ The dataset maybe accessed via the `.csv` file given [here](https://archive.ics.
 
 This cleaning maybe observed in the `data-cleaning.ipynb` file in this notebook.
 
+I further brought this data in my experiment, by creating a Tabular Dataset using `TabularDatasetFactory` and furthermore used it as a pandas Dataframe, using the dataset's `to_pandas_dataframe()` method. 
+
 ## Automated ML<a name="aml"></a>
 I used the following setting for my automl experiment.
 
@@ -46,46 +48,73 @@ I used the following setting for my automl experiment.
 
 ### Results
 
-The best performing model is the **Voting Ensemble** model with a Weighted Average Precision Score of 0.9150. 
+The best performing model is the **Voting Ensemble** model with a Weighted Average Precision Score of 0.9061. 
 
-One may notice that the algorithms with the next best score, written as follows, has a good number of Extreme Random Trees followed by XGBoostClassifier. 
+One may notice that the algorithms with the next best score, written as follows, has a good number of Random Trees followed by XGBoostClassifier. 
 
 |Model |Weighted Average Precision Score|
 |-|-|
-|StandardScalerWrapper ExtremeRandomTrees|0.9112 |
-|MinMaxScaler ExtremeRandomTrees|0.8958|
-|MinMaxScaler ExtremeRandomTrees|0.8944|
-|MaxAbsScaler XGBoostClassifier|0.8723 |
+|MaxAbsScaler LightGBM|0.9006|
+|MinMaxScaler RandomForest|0.9004 |
+|StandardScalerWrapper XGBoostClassifier|0.8960|
+|MinMaxScaler ExtremeRandomTrees |0.8945|
+|StandardScalerWrapper XGBoostClassifier|0.8927|
 
 
 The interesting part is that these are infact the algorithms emsembled in the Voting Ensemble, with the following attributes
 
 |**Field**|Value|
 |-|-|
-|**Ensembled Iterations**|11, 13, 14, 15, 8, 4, 5, 6, 9, 0|
-|**Ensembled Algorithms**|'ExtremeRandomTrees', 'ExtremeRandomTrees', 'RandomForest', 'XGBoostClassifier', 'ExtremeRandomTrees', 'ExtremeRandomTrees', 'RandomForest', 'ExtremeRandomTrees', 'RandomForest', 'LightGBM'|
-|**Ensemble Weights**|0.13333333333333333, 0.06666666666666667, 0.06666666666666667, 0.06666666666666667, 0.13333333333333333, 0.13333333333333333, 0.13333333333333333, 0.13333333333333333, 0.06666666666666667, 0.06666666666666667|
-|**Best Individual Pipeline Score**|"0.9112431387013187"|
+|**Ensembled Iterations**|0, 14, 15, 6, 26|
+|**Ensembled Algorithms**|'LightGBM', 'RandomForest', 'XGBoostClassifier', 'ExtremeRandomTrees', 'XGBoostClassifier'|
+|**Ensemble Weights**|0.3333333333333333, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666|
+|**Best Individual Pipeline Score**|"0.9005922928114609"|
 
+### Future Improvement
 I think if we ran the automl run longer we may find some more insights similar to this which might as well help us improve our results.
 
+### Screenshots from the Run
 My run completed successfully, as displayed in the `RunDetails` widget, from my Jupyter Notebook below.
-<img src="/images/Screen Shot 2021-01-21 at 9.37.38 PM.png"/>
+[automl-rundetails]("/images/automl-rundetails-widget.png")
 
 The various models trained can be observed below, where `VotingEnsemble` has the best performance
-<img src="/images/Screen Shot 2021-01-21 at 3.39.24 PM.png"/>
+[automl models trained]("/images/automl-exptdetails.png")
 
 The parameters and further information about the best model maybe further received, as visible in the screenshot below.
-<img src="/images/Screen Shot 2021-01-21 at 3.39.45 PM.png"/>
+[automl further info]("/images/automl-runid.png")
 
 ## Hyperparameter Tuning<a name="ht"></a>
 Being a classification problem, I used **Logistic Regression** whose hyperparameters are tuned using the following configuration.
 
+The hyperparameters to be tuned are:
+* **Learning Rate** -  It controls how quickly the model is adapted to the problem. It has a small positive value, often in the range between 0.0 and 1.0.
+* **Maximum Iterations** - It is the maximum number of iterations that Regression Algorithm can perform.
+
 **Bandit Policy** <br/>
 Bandit policy is based on slack factor/slack amount and evaluation interval. Bandit terminates runs where the primary metric is not within the specified slack factor/slack amount compared to the best performing run. Unlike Truncation policy it doesn't calculate primary metric for all runs only to delete a percentage of them, but termminate it as soon as the primary metric doesn't satisfy slack amount, omitting unnecessary baggage. It also omits the need to calculate running Median, making it less computationally cumbersome unlike MedianStoppingPolicy.
 
+I have chosen my parameters for the same as follows:
+
+|Parameter|Value|Meaning|
+|-|-|-|
+|evaluation_interval|1|The frequency for applying the policy.|
+|slack_factor|0.001|The ratio used to calculate the allowed distance from the best performing experiment run.|
+
 **Random Parameter Sampling** <br/>
 Random sampling supports discrete and continuous hyperparameters. In random sampling, hyperparameter values are randomly selected from the defined search space. It supports early termination of low-performance runs. Unlike other methods, this gives us a wide exploratory range, which is good to do when we don't have much idea about the parameters. It can also be used do an initial search with random sampling and then refine the search space to improve results.
+
+Herein, we provide hyperdrive a search space to check for parameters, for learning rate I started with a very small search space of 0.02 to 0.05, where I got a very small value for my primary metric (which actually had to be maximised), and the maximum iterations were the least number provided. 
+[Attempt 2 Results]("/images/hyperdrive-parameters.png")
+
+So I increased `--C` to be in the range `0.09 - 0.15` and added 50 to the choices of maximum iterations, and received the following.
+
+[Attempt 2 Results]("/images/hyperdrive-a2.png")
+
+I see thet the regularisation metric tends to be on the greater side, and took a much greater range of `0.3,0.6` while also adding more choices for `max_iter` as it increased to 500 from 100 in the previous run. Here I observed `--C` close to 0.3 and 1200 ite4rations and improvement in the metric.
+
+So I finally used `0.4-0.6` for the range for regularisation and choices of `max_iter` arounf 1200, namely `1000,1100,1200,1300,1400`. Since the result is similar, I'll retain this.
+
+[Attempt 3 Results]("/images/hyperdrive-a3.png")
 
 **Weighted Average Precision Score**<br/>
 Since the data isn't quite balanced, I chose [Weighted Average Precision Score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.average_precision_score.html) as my primary metric, from the scikit learn library.
@@ -95,46 +124,60 @@ The hyperparameters derived by Hyperdrive for the Logistic Regression Model is a
 
 |Hyperparameter|Value|
 |-|-|
-|Regularization Strength|0.025600843362077644|
-|Max Iterations|100|
+|Regularization Strength|0.4862058369948942|
+|Max Iterations|1400|
 
-This gave a Weighted Average Precision Score of 0.09289617486338798
+This gave a Weighted Average Precision Score of 0.10382513661202186.
 
-The Run was completed successfully as one may observe in the screenshot below, wherein I used the `RunDetails` widget to derive information about the same.
-<img src="/images/Screen Shot 2021-01-21 at 3.40.21 PM.png"/>
+### Future Improvements
+I observed that, I may get a higher accuracy for this model, but that is due to the bias in the data. Using Weighted Average Precision Score shows that Logistic Regression isn't actually well suited for this problem. In a future scenario I might want to use a different model for hyperparameter tuning.
+
+### Screenshots from the Run
+The Run was completed successfully as one may observe in the screenshot below, wherein I used the `RunDetails` widget to derive information about the same. Visualising the training process is helpful in getting details of the different runs and metrics of the experiment. The RunDetails widget is one important tool that facilitates this, right from the notebook.
+[Hyperdrive rundetails]("/images/hyperdrive-rundetails.png")
 This widget also helped me debug, when it didn't identify my primary metric as I happened to log it with a slightly different name in `train.py`.
 
 Hereby I may observe information about the parameters generated by the best run along with its run id.
-<img src="/images/Screen Shot 2021-01-23 at 3.50.16 AM.png"/>
-
-I observed that, I may get a higher accuracy for this model, but that is due to the bias in the data. Using Weighted Average Precision Score shows that Logistic Regression isn't actually well suited for this problem. In a future scenario I might want to use a different model for hyperparameter tuning.
+[hyperdrive parameters]("/images/hyperdrive-a3.png")
 
 ## Model Deployment<a name="md"></a>
 After finding the best model, I hereby deploy it:
 
 I start by downloading the model itself from the `best_run` generated by AutoML.
-<img src="/images/Screen Shot 2021-01-22 at 12.25.42 AM.png"/>
+[Model Download](/images/bestrun-download.png")
 
 Following this I retrieve other files required for deployment, that are configured already by AutoML in our `best_run` namely the Conda Environment (required to know the packages in order to run the webservice) and Inference Configuration (required to score the webservice deployed). We also configure an Azure Container Instance in order to deploy the model as a webservice.
-<img src="/images/Screen Shot 2021-01-22 at 12.26.16 AM.png"/>
+[deployment files download]("/images/deployment-files-download.png")
 
 With all these configurations ready, we may now actually deploy our model as a webservice, which is performes as follows.
-<img src="/images/Screen Shot 2021-01-22 at 12.33.29 AM.png"/>
+[model-deploy]("/images/model-deploy.png")
 
 After the state of the model changes to *Healthy* from *Transitioning*, we can actually retrieve important information about our webservice such as Swagger URI, Scoring URI etc. which is done as follows.
-<img src="/images/Screen Shot 2021-01-22 at 12.34.10 AM.png"/>
+[Health Endpoint]("/images/healthy-endpoint.png")
 
 The endpoint generated is a REST API, and takes in `json` data. Some example `json` data may be generated as follows:
-<img src="/images/Screen Shot 2021-01-22 at 12.38.57 AM.png"/>
+[Input Data]("/images/input-data-pop.png")
 
 Furthermore the endpoint can be queried as follows, using the Scoring URI and Primary key, as coded in the `endpoint.py` file:
-<img src="/images/Screen Shot 2021-01-23 at 3.54.45 AM.png"/>
+[endpoint screenshot]("/images/input-data-pop.png)
 
 We can also retrieve logs for our model as follows:
-<img src="/images/Screen Shot 2021-01-22 at 12.43.32 AM.png"/>
+[Model Logs]("/images/model-logs.png")
 
 Some more things that we can do with our service includes enabling application insights as done below, as well as deleting the service after use.
-<img src="/images/Screen Shot 2021-01-22 at 12.45.02 AM.png"/>
+[Enable Insights and Delete]("/images/enable-insights-delete.png")
 
 ## Screen Recording<a name="sr"></a>
-View the Screen Recording for my submission [here](https://youtu.be/SxVqmsbDcnE).
+View the Screen Recording for my submission [here](https://youtu.be/SjtqRTwpYLw).
+
+## Standout Suggestions
+
+### Convert model to ONNX format
+
+The Open Neural Network Exchange (ONNX) is an open-source artificial intelligence ecosystem. it allows its users to interchange models between various ML frameworks and tools. I have converted the moel to ONNX format and made predictions with the same.
+[Get ONNX model]("/images/onnx1.png")
+[Use ONNX Model]("/images/onnx2.png")
+
+### Enabled Logging in my deployed Web App
+I've enabled logging, by means of the `logs.py` file, which fetches the webservice from its name and the displays its logs. This has also been performed in the Jupyter Notebook.
+[Logs]("/images/logs.png")
