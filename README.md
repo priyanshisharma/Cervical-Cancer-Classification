@@ -14,6 +14,7 @@ I used an external dataset i.e. [Cervical Cancer Risk Classification](https://ar
  * [Hyperparameter Tuning](#ht)
  * [Model Deployment](#md)
  * [Screen Recording](#sr)
+ * [Standout Suggestions](#ss)
  
  
 ## Dataset<a name="ds"></a>
@@ -170,7 +171,7 @@ Some more things that we can do with our service includes enabling application i
 ## Screen Recording<a name="sr"></a>
 View the Screen Recording for my submission [here](https://youtu.be/SjtqRTwpYLw).
 
-## Standout Suggestions
+## Standout Suggestions<a name="ss"></a>
 
 ### Convert model to ONNX format
 
